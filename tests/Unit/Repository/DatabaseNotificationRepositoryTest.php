@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Marko\Database\Config\DatabaseTimezoneConfig;
 use Marko\Database\Connection\ConnectionInterface;
 use Marko\Notification\Contracts\NotifiableInterface;
 use Marko\Notification\Database\Entity\DatabaseNotification;
@@ -74,7 +75,7 @@ test('it returns all notifications for a notifiable ordered by created_at desc',
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $result = $repo->forNotifiable($notifiable);
 
     expect($capturedSql)->toContain('SELECT * FROM notifications')
@@ -110,7 +111,7 @@ test('it returns only unread notifications for a notifiable', function (): void 
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $result = $repo->unread($notifiable);
 
     expect($capturedSql)->toContain('read_at IS NULL')
@@ -133,7 +134,7 @@ test('it marks a single notification as read', function (): void {
             return 1;
         });
 
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $repo->markAsRead('uuid-123');
 
     expect($capturedSql)->toContain('UPDATE notifications SET read_at')
@@ -156,7 +157,7 @@ test('it marks all notifications as read for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $repo->markAllAsRead($notifiable);
 
     expect($capturedSql)->toContain('UPDATE notifications SET read_at')
@@ -181,7 +182,7 @@ test('it deletes a single notification by id', function (): void {
             return 1;
         });
 
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $repo->delete('uuid-456');
 
     expect($capturedSql)->toContain('DELETE FROM notifications WHERE id = ?')
@@ -203,7 +204,7 @@ test('it deletes all notifications for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $repo->deleteAll($notifiable);
 
     expect($capturedSql)->toContain('DELETE FROM notifications WHERE notifiable_type = ? AND notifiable_id = ?')
@@ -222,7 +223,7 @@ test('it counts unread notifications for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock(), DatabaseTimezoneConfig::fromName('UTC'));
     $count = $repo->unreadCount($notifiable);
 
     expect($capturedSql)->toContain('SELECT COUNT(*)')

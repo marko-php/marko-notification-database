@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Marko\Notification\Database\Repository;
 
+use Marko\Database\Config\DatabaseTimezoneConfig;
 use Marko\Database\Connection\ConnectionInterface;
 use Marko\Notification\Contracts\NotifiableInterface;
 use Marko\Notification\Database\Entity\DatabaseNotification;
 use Psr\Clock\ClockInterface;
 
+/**
+ * read_at is written in the database timezone (`database.timezone`, UTC by
+ * default), the same zone DatabaseChannel writes created_at in.
+ */
 class DatabaseNotificationRepository implements NotificationRepositoryInterface
 {
     public function __construct(
         private ConnectionInterface $connection,
         private ClockInterface $clock,
+        private DatabaseTimezoneConfig $databaseTimezoneConfig,
     ) {}
 
     /**
@@ -49,7 +55,7 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
     ): void {
         $this->connection->execute(
             'UPDATE notifications SET read_at = ? WHERE id = ?',
-            [$this->clock->now()->format('Y-m-d H:i:s'), $notificationId],
+            [$this->databaseTimezoneConfig->format($this->clock->now()), $notificationId],
         );
     }
 
@@ -59,7 +65,7 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
         $this->connection->execute(
             'UPDATE notifications SET read_at = ? WHERE notifiable_type = ? AND notifiable_id = ? AND read_at IS NULL',
             [
-                $this->clock->now()->format('Y-m-d H:i:s'),
+                $this->databaseTimezoneConfig->format($this->clock->now()),
                 $notifiable->getNotifiableType(),
                 (string) $notifiable->getNotifiableId(),
             ],
