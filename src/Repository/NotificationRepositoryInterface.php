@@ -28,11 +28,26 @@ interface NotificationRepositoryInterface
     ): array;
 
     /**
-     * Mark a single notification as read.
+     * Mark a single notification as read, by ID alone, whoever owns it.
+     *
+     * For admin and internal use only. Code that takes the ID from a request must use markAsReadFor(),
+     * otherwise any user who learns another user's notification ID can mark it as read.
      */
     public function markAsRead(
         string $notificationId,
     ): void;
+
+    /**
+     * Mark a single notification as read, only if it belongs to the notifiable.
+     *
+     * The default for request-driven code. A notification that is already read keeps its original read_at.
+     *
+     * @return bool True when the notification exists and belongs to the notifiable, false otherwise
+     */
+    public function markAsReadFor(
+        NotifiableInterface $notifiable,
+        string $notificationId,
+    ): bool;
 
     /**
      * Mark all notifications as read for a notifiable.
@@ -42,11 +57,26 @@ interface NotificationRepositoryInterface
     ): void;
 
     /**
-     * Delete a single notification by ID.
+     * Delete a single notification by ID alone, whoever owns it.
+     *
+     * For admin and internal use only. Code that takes the ID from a request must use deleteFor(),
+     * otherwise any user who learns another user's notification ID can delete it.
      */
     public function delete(
         string $notificationId,
     ): void;
+
+    /**
+     * Delete a single notification, only if it belongs to the notifiable.
+     *
+     * The default for request-driven code.
+     *
+     * @return bool True when the notification existed, belonged to the notifiable and was deleted, false otherwise
+     */
+    public function deleteFor(
+        NotifiableInterface $notifiable,
+        string $notificationId,
+    ): bool;
 
     /**
      * Delete all notifications for a notifiable.

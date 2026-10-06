@@ -69,6 +69,34 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
         );
     }
 
+    /**
+     * Only an unread row is updated, so the original read_at survives. When nothing was updated the row is
+     * looked up, because "already read" and "not yours or missing" both report zero affected rows (MySQL
+     * also reports zero when the new value equals the old one).
+     */
+    public function markAsReadFor(
+        NotifiableInterface $notifiable,
+        string $notificationId,
+    ): bool {
+        $owner = [$notifiable->getNotifiableType(), (string) $notifiable->getNotifiableId()];
+
+        $updated = $this->connection->execute(
+            "UPDATE {$this->table()} SET read_at = ? WHERE id = ? AND notifiable_type = ? AND notifiable_id = ? AND read_at IS NULL",
+            [$this->databaseTimezoneConfig->format($this->clock->now()), $notificationId, ...$owner],
+        );
+
+        if ($updated > 0) {
+            return true;
+        }
+
+        $result = $this->connection->query(
+            "SELECT COUNT(*) as count FROM {$this->table()} WHERE id = ? AND notifiable_type = ? AND notifiable_id = ?",
+            [$notificationId, ...$owner],
+        );
+
+        return (int) ($result[0]['count'] ?? 0) > 0;
+    }
+
     public function markAllAsRead(
         NotifiableInterface $notifiable,
     ): void {
@@ -89,6 +117,18 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
             "DELETE FROM {$this->table()} WHERE id = ?",
             [$notificationId],
         );
+    }
+
+    public function deleteFor(
+        NotifiableInterface $notifiable,
+        string $notificationId,
+    ): bool {
+        $deleted = $this->connection->execute(
+            "DELETE FROM {$this->table()} WHERE id = ? AND notifiable_type = ? AND notifiable_id = ?",
+            [$notificationId, $notifiable->getNotifiableType(), (string) $notifiable->getNotifiableId()],
+        );
+
+        return $deleted > 0;
     }
 
     public function deleteAll(

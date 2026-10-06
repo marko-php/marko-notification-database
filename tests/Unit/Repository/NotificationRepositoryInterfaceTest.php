@@ -76,3 +76,18 @@ test('it defines NotificationRepositoryInterface with delete, deleteAll, and unr
         ->and($params[0]->getType()?->getName())->toBe(NotifiableInterface::class);
     expect($unreadCount->getReturnType()?->getName())->toBe('int');
 });
+
+test('it defines owner-scoped markAsReadFor and deleteFor methods', function (): void {
+    $reflection = new ReflectionClass(NotificationRepositoryInterface::class);
+
+    foreach (['markAsReadFor', 'deleteFor'] as $name) {
+        $method = $reflection->getMethod($name);
+        $params = $method->getParameters();
+
+        expect($method->isPublic())->toBeTrue()
+            ->and($params)->toHaveCount(2)
+            ->and($params[0]->getType()?->getName())->toBe(NotifiableInterface::class)
+            ->and($params[1]->getType()?->getName())->toBe('string')
+            ->and($method->getReturnType()?->getName())->toBe('bool');
+    }
+})->issue(422);
