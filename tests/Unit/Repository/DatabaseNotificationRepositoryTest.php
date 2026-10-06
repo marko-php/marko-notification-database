@@ -46,7 +46,7 @@ test('it returns all notifications for a notifiable ordered by created_at desc',
     $capturedSql = null;
     $capturedBindings = null;
 
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
 
     $connection->method('quoteIdentifier')->willReturnCallback(fn (string $name): string => "\"$name\"");
     $connection->method('query')
@@ -94,7 +94,7 @@ test('it returns all notifications for a notifiable ordered by created_at desc',
 test('it returns only unread notifications for a notifiable', function (): void {
     $capturedSql = null;
 
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
 
     $connection->method('quoteIdentifier')->willReturnCallback(fn (string $name): string => "\"$name\"");
     $connection->method('query')
@@ -226,7 +226,7 @@ test('it deletes all notifications for a notifiable', function (): void {
 test('it counts unread notifications for a notifiable', function (): void {
     $capturedSql = null;
 
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
 
     $connection->method('quoteIdentifier')->willReturnCallback(fn (string $name): string => "\"$name\"");
     $connection->method('query')

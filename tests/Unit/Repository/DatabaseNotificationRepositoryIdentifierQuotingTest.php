@@ -18,7 +18,7 @@ it('quotes the notifications table in every repository statement', function (): 
     $record = function (string $sql) use (&$statements): void {
         $statements[] = $sql;
     };
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
     $connection->method('quoteIdentifier')->willReturnCallback(fn (string $name): string => "`$name`");
     $connection->method('query')->willReturnCallback(function (string $sql) use ($record): array {
         $record($sql);
@@ -35,7 +35,7 @@ it('quotes the notifications table in every repository statement', function (): 
         new FakeClock(),
         DatabaseTimezoneConfig::fromName('UTC'),
     );
-    $notifiable = $this->createMock(NotifiableInterface::class);
+    $notifiable = $this->createStub(NotifiableInterface::class);
     $notifiable->method('getNotifiableType')->willReturn('App\\Entity\\User');
     $notifiable->method('getNotifiableId')->willReturn(42);
 

@@ -11,7 +11,7 @@ use Marko\Testing\Fake\FakeClock;
 test('it stores read_at in the database timezone when marking one notification read', function (): void {
     $capturedBindings = null;
 
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
     $connection->method('execute')
         ->willReturnCallback(function (string $sql, array $bindings) use (&$capturedBindings) {
             $capturedBindings = $bindings;
@@ -32,7 +32,7 @@ test('it stores read_at in the database timezone when marking one notification r
 test('it stores read_at in the database timezone when marking all notifications read', function (): void {
     $capturedBindings = null;
 
-    $connection = $this->createMock(ConnectionInterface::class);
+    $connection = $this->createStub(ConnectionInterface::class);
     $connection->method('execute')
         ->willReturnCallback(function (string $sql, array $bindings) use (&$capturedBindings) {
             $capturedBindings = $bindings;
@@ -40,7 +40,7 @@ test('it stores read_at in the database timezone when marking all notifications 
             return 2;
         });
 
-    $notifiable = $this->createMock(NotifiableInterface::class);
+    $notifiable = $this->createStub(NotifiableInterface::class);
     $notifiable->method('getNotifiableType')->willReturn('App\\Entity\\User');
     $notifiable->method('getNotifiableId')->willReturn(7);
 
