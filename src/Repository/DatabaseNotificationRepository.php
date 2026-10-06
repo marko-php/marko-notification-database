@@ -7,11 +7,13 @@ namespace Marko\Notification\Database\Repository;
 use Marko\Database\Connection\ConnectionInterface;
 use Marko\Notification\Contracts\NotifiableInterface;
 use Marko\Notification\Database\Entity\DatabaseNotification;
+use Psr\Clock\ClockInterface;
 
 class DatabaseNotificationRepository implements NotificationRepositoryInterface
 {
     public function __construct(
         private ConnectionInterface $connection,
+        private ClockInterface $clock,
     ) {}
 
     /**
@@ -47,7 +49,7 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
     ): void {
         $this->connection->execute(
             'UPDATE notifications SET read_at = ? WHERE id = ?',
-            [date('Y-m-d H:i:s'), $notificationId],
+            [$this->clock->now()->format('Y-m-d H:i:s'), $notificationId],
         );
     }
 
@@ -56,7 +58,11 @@ class DatabaseNotificationRepository implements NotificationRepositoryInterface
     ): void {
         $this->connection->execute(
             'UPDATE notifications SET read_at = ? WHERE notifiable_type = ? AND notifiable_id = ? AND read_at IS NULL',
-            [date('Y-m-d H:i:s'), $notifiable->getNotifiableType(), (string) $notifiable->getNotifiableId()],
+            [
+                $this->clock->now()->format('Y-m-d H:i:s'),
+                $notifiable->getNotifiableType(),
+                (string) $notifiable->getNotifiableId(),
+            ],
         );
     }
 

@@ -7,6 +7,7 @@ use Marko\Notification\Contracts\NotifiableInterface;
 use Marko\Notification\Database\Entity\DatabaseNotification;
 use Marko\Notification\Database\Repository\DatabaseNotificationRepository;
 use Marko\Notification\Database\Repository\NotificationRepositoryInterface;
+use Marko\Testing\Fake\FakeClock;
 
 function makeNotifiable(): NotifiableInterface
 {
@@ -73,7 +74,7 @@ test('it returns all notifications for a notifiable ordered by created_at desc',
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $result = $repo->forNotifiable($notifiable);
 
     expect($capturedSql)->toContain('SELECT * FROM notifications')
@@ -109,7 +110,7 @@ test('it returns only unread notifications for a notifiable', function (): void 
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $result = $repo->unread($notifiable);
 
     expect($capturedSql)->toContain('read_at IS NULL')
@@ -132,7 +133,7 @@ test('it marks a single notification as read', function (): void {
             return 1;
         });
 
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $repo->markAsRead('uuid-123');
 
     expect($capturedSql)->toContain('UPDATE notifications SET read_at')
@@ -155,7 +156,7 @@ test('it marks all notifications as read for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $repo->markAllAsRead($notifiable);
 
     expect($capturedSql)->toContain('UPDATE notifications SET read_at')
@@ -180,7 +181,7 @@ test('it deletes a single notification by id', function (): void {
             return 1;
         });
 
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $repo->delete('uuid-456');
 
     expect($capturedSql)->toContain('DELETE FROM notifications WHERE id = ?')
@@ -202,7 +203,7 @@ test('it deletes all notifications for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $repo->deleteAll($notifiable);
 
     expect($capturedSql)->toContain('DELETE FROM notifications WHERE notifiable_type = ? AND notifiable_id = ?')
@@ -221,7 +222,7 @@ test('it counts unread notifications for a notifiable', function (): void {
         });
 
     $notifiable = makeNotifiable();
-    $repo = new DatabaseNotificationRepository($connection);
+    $repo = new DatabaseNotificationRepository($connection, new FakeClock());
     $count = $repo->unreadCount($notifiable);
 
     expect($capturedSql)->toContain('SELECT COUNT(*)')
